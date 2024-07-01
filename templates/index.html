@@ -107,7 +107,7 @@
                 <p class="message-{{ message.role }}">{{ message.content }}</p>
             {% endfor %}
         </div>
-        <form action="/ask" method="POST" class="input-container">
+        <form action="/ChatGpt-Openai" method="POST" class="input-container">
             <input type="text" name="question" placeholder="Digite sua pergunta">
             <button type="submit">Enviar</button>
         </form>

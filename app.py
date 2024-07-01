@@ -16,7 +16,7 @@ history = []
 def home():
     return render_template('index.html', history=history)
 
-@app.route('/ask', methods=['POST'])
+@app.route('/ChatGpt-Openai', methods=['POST'])
 def ask():
     question = request.form['question']
     response = generate_question_response(question)
