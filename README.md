@@ -68,7 +68,7 @@ history = []
 def home():
     return render_template('index.html', history=history)
 
-@app.route('/ask', methods=['POST'])
+@app.route('/ChatGpt-Openai', methods=['POST'])
 def ask():
     question = request.form['question']
     response = generate_question_response(question)
@@ -207,7 +207,7 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
                 <p class="message-{{ message.role }}">{{ message.content }}</p>
             {% endfor %}
         </div>
-        <form action="/ask" method="POST" class="input-container">
+        <form action="/ChatGpt-Openai" method="POST" class="input-container">
             <input type="text" name="question" placeholder="Digite sua pergunta">
             <button type="submit">Enviar</button>
         </form>
@@ -221,5 +221,3 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
 Para usar o código HTML fornecido no projeto Flask, certifique-se de colocar todos os arquivos HTML na pasta `templates`. O Flask utiliza essa convenção para localizar os templates HTML durante a execução do aplicativo.
 
 ---
-
-Espero que isso ajude! Se precisar de mais alguma coisa ou alguma outra explicação, estou à disposição!
