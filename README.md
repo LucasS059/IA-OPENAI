@@ -50,6 +50,7 @@ Este projeto utiliza a API da OpenAI para criar uma aplicação web que responde
 O código Python abaixo demonstra como configurar um servidor Flask para integrar a API da OpenAI e responder a perguntas dos usuários:
 
 ```python
+
 from flask import Flask, render_template, request
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -57,7 +58,7 @@ import os
 
 load_dotenv()
 
-openai_api_key = os.getenv('OPENAI_API_KEY')
+openai_api_key = os.getenv('OPENAI_API_KEY') 
 client = OpenAI(api_key=openai_api_key)
 
 app = Flask(__name__)
@@ -86,11 +87,19 @@ def generate_question_response(question):
         ],
         temperature=0, 
     )
+
+    raw_text = response.choices[0].message.content.strip()
+
+    lines = raw_text.split('\n')
+    formatted_response = '<br>'.join(lines)
     
-    return response.choices[0].message.content
+    return formatted_response
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)
+
 ```
 
 ### Código HTML:
@@ -98,6 +107,7 @@ if __name__ == '__main__':
 A página HTML a seguir representa a interface onde o chatbot da OpenAI será exibido. Ela utiliza estilos CSS para criar uma experiência de chat limpa e responsiva:
 
 ```html
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -162,14 +172,16 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             background-color: #2c2c2c;
         }
 
-        .input-container input {
+        .input-container textarea {
             flex: 1;
             padding: 15px;
             border: none;
             background-color: #2c2c2c;
             color: #ffffff;
             font-size: 16px;
-            border-radius: 5px 0 0 5px;
+            border-radius: 5px;
+            resize: none; /* Impede que o usuário redimensione a área de texto */
+            min-height: 50px; /* Altura mínima para a área de texto */
         }
 
         .input-container button {
@@ -199,21 +211,48 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
     <div class="chat-container">
         <div class="tema">
             <h1>IA - OPENAI</h1>
-            <p>Esta página HTML e CSS representa a interface onde o chatbot da OpenAI será exibido.</p>
         </div>
 
         <div class="messages">
             {% for message in history %}
-                <p class="message-{{ message.role }}">{{ message.content }}</p>
+                <p class="message-{{ message.role }}">{{ message.content | safe }}</p>
             {% endfor %}
         </div>
-        <form action="/ChatGpt-Openai" method="POST" class="input-container">
-            <input type="text" name="question" placeholder="Digite sua pergunta">
+        <form action="/ChatGpt-Openai" method="POST" class="input-container" id="chat-form">
+            <textarea name="question" placeholder="Digite sua pergunta" rows="3"></textarea>
             <button type="submit">Enviar</button>
         </form>
     </div>
+
+    <script>
+        // Função para rolar a página automaticamente para o final
+        function scrollToBottom() {
+            var chatContainer = document.querySelector('.messages');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Chamar a função ao carregar a página
+        window.onload = function() {
+            scrollToBottom();
+        };
+
+        // Chamar a função sempre que o formulário for enviado
+        document.getElementById('chat-form').addEventListener('submit', function() {
+            scrollToBottom();
+        });
+
+        // Impedir que a tecla Enter crie uma nova linha na textarea
+        document.querySelector('textarea').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Impede o comportamento padrão do Enter
+                document.getElementById('chat-form').submit(); // Envia o formulário
+            }
+        });
+    </script>
+
 </body>
 </html>
+
 ```
 
 ### Nota Importante:
