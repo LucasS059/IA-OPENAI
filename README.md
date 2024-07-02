@@ -51,49 +51,56 @@ O código Python abaixo demonstra como configurar um servidor Flask para integra
 
 ```python
 
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
-openai_api_key = os.getenv('OPENAI_API_KEY') 
-client = OpenAI(api_key=openai_api_key)
+chave_api_openai = os.getenv('OPENAI_API_KEY')
+cliente = OpenAI(api_key=chave_api_openai)
 
 app = Flask(__name__)
 
-history = []
+historico = []
 
 @app.route('/')
 def home():
-    return render_template('index.html', history=history)
+    return render_template('index.html', historico=historico)
 
 @app.route('/ChatGpt-Openai', methods=['POST'])
-def ask():
-    question = request.form['question']
-    response = generate_question_response(question)
+def perguntar():
+    pergunta = request.form['question']
     
-    history.append({"role": "user", "content": question})
-    history.append({"role": "bot", "content": response})
+    historico.append({"role": "user", "content": pergunta})
     
-    return render_template('index.html', history=history)
+    # Gerar resposta com histórico completo
+    resposta = gerar_resposta_pergunta(historico)
+    
+    historico.append({"role": "assistant", "content": resposta})
+    
+    return render_template('index.html', historico=historico)
 
-def generate_question_response(question):
-    response = client.chat.completions.create(
+@app.route('/clear', methods=['POST'])
+def limpar():
+    global historico
+    historico = []
+    return redirect(url_for('home'))
+
+def gerar_resposta_pergunta(historico):
+    resposta = cliente.chat.completions.create(
         model="gpt-3.5-turbo", 
-        messages=[
-            {"role": "user", "content": question},
-        ],
-        temperature=0, 
+        messages=historico,
+        temperature=1, 
     )
 
-    raw_text = response.choices[0].message.content.strip()
+    texto_cru = resposta.choices[0].message.content.strip()
 
-    lines = raw_text.split('\n')
-    formatted_response = '<br>'.join(lines)
+    linhas = texto_cru.split('\n')
+    resposta_formatada = '<br>'.join(linhas)
     
-    return formatted_response
+    return resposta_formatada
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)
@@ -158,7 +165,7 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             background-color: #4a4a4a;
         }
 
-        .message-bot {
+        .message-assistant {
             align-self: flex-start;
             background-color: #333333;
         }
@@ -178,8 +185,8 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             color: #ffffff;
             font-size: 16px;
             border-radius: 5px;
-            resize: none; /* Impede que o usuário redimensione a área de texto */
-            min-height: 50px; /* Altura mínima para a área de texto */
+            resize: none;
+            min-height: 50px;
         }
 
         .input-container button {
@@ -202,6 +209,21 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             border-radius: 10px;
             background-color: #3b3b3b;
         }
+
+        .clear-button {
+            background-color: #ff4b4b;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .clear-button:hover {
+            background-color: #ff0000;
+        }
     </style>
 </head>
 <body>
@@ -211,13 +233,16 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
         </div>
 
         <div class="messages">
-            {% for message in history %}
+            {% for message in historico %}
                 <p class="message-{{ message.role }}">{{ message.content | safe }}</p>
             {% endfor %}
         </div>
         <form action="/ChatGpt-Openai" method="POST" class="input-container" id="chat-form">
             <textarea name="question" placeholder="Digite sua pergunta" rows="3"></textarea>
             <button type="submit">Enviar</button>
+        </form>
+        <form action="/clear" method="POST">
+            <button type="submit" class="clear-button">Apagar Conversa</button>
         </form>
     </div>
 
@@ -241,8 +266,8 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
         // Impedir que a tecla Enter crie uma nova linha na textarea
         document.querySelector('textarea').addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Impede o comportamento padrão do Enter
-                document.getElementById('chat-form').submit(); // Envia o formulário
+                e.preventDefault();
+                document.getElementById('chat-form').submit();
             }
         });
     </script>
