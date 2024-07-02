@@ -14,7 +14,6 @@
             justify-content: center;
             align-items: center;
             height: 100vh;
-            
         }
 
         .chat-container {
@@ -63,14 +62,16 @@
             background-color: #2c2c2c;
         }
 
-        .input-container input {
+        .input-container textarea {
             flex: 1;
             padding: 15px;
             border: none;
             background-color: #2c2c2c;
             color: #ffffff;
             font-size: 16px;
-            border-radius: 5px 0 0 5px;
+            border-radius: 5px;
+            resize: none; /* Impede que o usuário redimensione a área de texto */
+            min-height: 50px; /* Altura mínima para a área de texto */
         }
 
         .input-container button {
@@ -104,13 +105,40 @@
 
         <div class="messages">
             {% for message in history %}
-                <p class="message-{{ message.role }}">{{ message.content }}</p>
+                <p class="message-{{ message.role }}">{{ message.content | safe }}</p>
             {% endfor %}
         </div>
-        <form action="/ChatGpt-Openai" method="POST" class="input-container">
-            <input type="text" name="question" placeholder="Digite sua pergunta">
+        <form action="/ChatGpt-Openai" method="POST" class="input-container" id="chat-form">
+            <textarea name="question" placeholder="Digite sua pergunta" rows="3"></textarea>
             <button type="submit">Enviar</button>
         </form>
     </div>
+
+    <script>
+        // Função para rolar a página automaticamente para o final
+        function scrollToBottom() {
+            var chatContainer = document.querySelector('.messages');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // Chamar a função ao carregar a página
+        window.onload = function() {
+            scrollToBottom();
+        };
+
+        // Chamar a função sempre que o formulário for enviado
+        document.getElementById('chat-form').addEventListener('submit', function() {
+            scrollToBottom();
+        });
+
+        // Impedir que a tecla Enter crie uma nova linha na textarea
+        document.querySelector('textarea').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault(); // Impede o comportamento padrão do Enter
+                document.getElementById('chat-form').submit(); // Envia o formulário
+            }
+        });
+    </script>
+
 </body>
 </html>

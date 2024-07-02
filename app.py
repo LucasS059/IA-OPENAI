@@ -34,8 +34,15 @@ def generate_question_response(question):
         ],
         temperature=0, 
     )
+
+    raw_text = response.choices[0].message.content.strip()
+
+    lines = raw_text.split('\n')
+    formatted_response = '<br>'.join(lines)
     
-    return response.choices[0].message.content
+    return formatted_response
+
+
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)
