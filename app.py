@@ -1,48 +1,53 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 from openai import OpenAI
 from dotenv import load_dotenv
 import os
 
 load_dotenv()
 
-openai_api_key = os.getenv('OPENAI_API_KEY') 
-client = OpenAI(api_key=openai_api_key)
+chave_api_openai = os.getenv('OPENAI_API_KEY')
+cliente = OpenAI(api_key=chave_api_openai)
 
 app = Flask(__name__)
 
-history = []
+historico = []
 
 @app.route('/')
 def home():
-    return render_template('index.html', history=history)
+    return render_template('index.html', historico=historico)
 
 @app.route('/ChatGpt-Openai', methods=['POST'])
-def ask():
-    question = request.form['question']
-    response = generate_question_response(question)
+def perguntar():
+    pergunta = request.form['question']
     
-    history.append({"role": "user", "content": question})
-    history.append({"role": "bot", "content": response})
+    historico.append({"role": "user", "content": pergunta})
     
-    return render_template('index.html', history=history)
+    # Gerar resposta com histórico completo
+    resposta = gerar_resposta_pergunta(historico)
+    
+    historico.append({"role": "assistant", "content": resposta})
+    
+    return render_template('index.html', historico=historico)
 
-def generate_question_response(question):
-    response = client.chat.completions.create(
+@app.route('/clear', methods=['POST'])
+def limpar():
+    global historico
+    historico = []
+    return redirect(url_for('home'))
+
+def gerar_resposta_pergunta(historico):
+    resposta = cliente.chat.completions.create(
         model="gpt-3.5-turbo", 
-        messages=[
-            {"role": "user", "content": question},
-        ],
-        temperature=0, 
+        messages=historico,
+        temperature=1, 
     )
 
-    raw_text = response.choices[0].message.content.strip()
+    texto_cru = resposta.choices[0].message.content.strip()
 
-    lines = raw_text.split('\n')
-    formatted_response = '<br>'.join(lines)
+    linhas = texto_cru.split('\n')
+    resposta_formatada = '<br>'.join(linhas)
     
-    return formatted_response
-
-
+    return resposta_formatada
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)

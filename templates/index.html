@@ -50,7 +50,7 @@
             background-color: #4a4a4a;
         }
 
-        .message-bot {
+        .message-assistant {
             align-self: flex-start;
             background-color: #333333;
         }
@@ -70,8 +70,8 @@
             color: #ffffff;
             font-size: 16px;
             border-radius: 5px;
-            resize: none; /* Impede que o usuário redimensione a área de texto */
-            min-height: 50px; /* Altura mínima para a área de texto */
+            resize: none;
+            min-height: 50px;
         }
 
         .input-container button {
@@ -94,6 +94,21 @@
             border-radius: 10px;
             background-color: #3b3b3b;
         }
+
+        .clear-button {
+            background-color: #ff4b4b;
+            color: #ffffff;
+            border: none;
+            padding: 10px 20px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            border-radius: 5px;
+        }
+
+        .clear-button:hover {
+            background-color: #ff0000;
+        }
     </style>
 </head>
 <body>
@@ -104,13 +119,16 @@
         </div>
 
         <div class="messages">
-            {% for message in history %}
+            {% for message in historico %}
                 <p class="message-{{ message.role }}">{{ message.content | safe }}</p>
             {% endfor %}
         </div>
         <form action="/ChatGpt-Openai" method="POST" class="input-container" id="chat-form">
             <textarea name="question" placeholder="Digite sua pergunta" rows="3"></textarea>
             <button type="submit">Enviar</button>
+        </form>
+        <form action="/clear" method="POST">
+            <button type="submit" class="clear-button">Apagar Conversa</button>
         </form>
     </div>
 
@@ -134,8 +152,8 @@
         // Impedir que a tecla Enter crie uma nova linha na textarea
         document.querySelector('textarea').addEventListener('keydown', function(e) {
             if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault(); // Impede o comportamento padrão do Enter
-                document.getElementById('chat-form').submit(); // Envia o formulário
+                e.preventDefault();
+                document.getElementById('chat-form').submit();
             }
         });
     </script>
