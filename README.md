@@ -95,8 +95,6 @@ def generate_question_response(question):
     
     return formatted_response
 
-
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=80, debug=True)
 
@@ -207,7 +205,6 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
     </style>
 </head>
 <body>
-
     <div class="chat-container">
         <div class="tema">
             <h1>IA - OPENAI</h1>
@@ -249,7 +246,6 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             }
         });
     </script>
-
 </body>
 </html>
 
