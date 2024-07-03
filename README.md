@@ -80,7 +80,7 @@ def perguntar():
     
     historico.append({"role": "assistant", "content": resposta})
     
-    return render_template('index.html', historico=historico)
+    return redirect(url_for('home'))
 
 @app.route('/clear', methods=['POST'])
 def limpar():
@@ -103,7 +103,7 @@ def gerar_resposta_pergunta(historico):
     return resposta_formatada
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=80, debug=True)
+    app.run(host='0.0.0.0', port=5000, debug=True)
 
 ```
 
@@ -141,6 +141,7 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             display: flex;
             flex-direction: column;
             height: 80vh; 
+            position: relative;
         }
 
         .messages {
@@ -172,6 +173,7 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
 
         .input-container {
             display: flex;
+            flex-direction: column;
             border-top: 1px solid #444444;
             padding: 10px;
             background-color: #2c2c2c;
@@ -219,14 +221,28 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             font-size: 16px;
             margin-top: 10px;
             border-radius: 5px;
+            margin: 0 auto;
         }
 
         .clear-button:hover {
             background-color: #ff0000;
         }
+
+        .button_submit {
+            margin: 10px;
+        }
+        
+        .forms_clear {
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
     </style>
 </head>
 <body>
+
     <div class="chat-container">
         <div class="tema">
             <h1>IA - OPENAI</h1>
@@ -238,10 +254,10 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             {% endfor %}
         </div>
         <form action="/ChatGpt-Openai" method="POST" class="input-container" id="chat-form">
-            <textarea name="question" placeholder="Digite sua pergunta" rows="3"></textarea>
-            <button type="submit">Enviar</button>
+            <textarea name="question" placeholder="Digite sua pergunta" rows="3" required></textarea>
+            <button class="button_submit" type="submit">Enviar</button>
         </form>
-        <form action="/clear" method="POST">
+        <form action="/clear" method="POST" class="forms_clear">
             <button type="submit" class="clear-button">Apagar Conversa</button>
         </form>
     </div>
@@ -259,8 +275,10 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
         };
 
         // Chamar a função sempre que o formulário for enviado
-        document.getElementById('chat-form').addEventListener('submit', function() {
+        document.getElementById('chat-form').addEventListener('submit', function(event) {
             scrollToBottom();
+            // Limpar o campo de entrada após o envio
+            document.querySelector('textarea').value = '';
         });
 
         // Impedir que a tecla Enter crie uma nova linha na textarea
@@ -268,6 +286,15 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             if (e.key === 'Enter' && !e.shiftKey) {
                 e.preventDefault();
                 document.getElementById('chat-form').submit();
+            }
+        });
+
+        // Mostrar a animação de carregamento ao enviar o formulário
+        document.getElementById('chat-form').addEventListener('submit', function(event) {
+            var question = document.querySelector('textarea').value.trim();
+            if (question === '') {
+                event.preventDefault();
+                return;
             }
         });
     </script>
