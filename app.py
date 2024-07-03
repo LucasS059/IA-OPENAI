@@ -27,7 +27,7 @@ def perguntar():
     
     historico.append({"role": "assistant", "content": resposta})
     
-    return render_template('index.html', historico=historico)
+    return redirect(url_for('home'))
 
 @app.route('/clear', methods=['POST'])
 def limpar():
