@@ -72,14 +72,9 @@ def home():
 @app.route('/ChatGpt-Openai', methods=['POST'])
 def perguntar():
     pergunta = request.form['question']
-    
     historico.append({"role": "user", "content": pergunta})
-    
-    # Gerar resposta com histórico completo
     resposta = gerar_resposta_pergunta(historico)
-    
     historico.append({"role": "assistant", "content": resposta})
-    
     return redirect(url_for('home'))
 
 @app.route('/clear', methods=['POST'])
@@ -96,10 +91,8 @@ def gerar_resposta_pergunta(historico):
     )
 
     texto_cru = resposta.choices[0].message.content.strip()
-
     linhas = texto_cru.split('\n')
     resposta_formatada = '<br>'.join(linhas)
-    
     return resposta_formatada
 
 if __name__ == '__main__':
