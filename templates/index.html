@@ -95,14 +95,14 @@
             padding: 10px;
             background-color: #2c2c2c;
             display: flex;
+            justify-content: center;
             align-items: center;
         }
 
         .input-container form {
             display: flex;
-            flex: 1;
+            flex:auto ;
             align-items: center;
-            gap: 10px;
         }
 
         .input-container textarea {
@@ -117,9 +117,14 @@
             min-height: 60px;
         }
 
+        textarea {
+            width: 480px;
+        }
+
         .buttons {
             display: flex;
-            gap: 10px;
+            justify-content: center;
+            padding: 10px;
         }
 
         .buttons form {
@@ -153,7 +158,7 @@
         }
 
         .clear-button:hover {
-            background-color: #ff0000;
+            background-color: #ff7878;
         }
     </style>
 </head>
@@ -177,10 +182,10 @@
                 <textarea name="question" placeholder="Digite sua pergunta" rows="3" required></textarea>
                 <div class="buttons">
                     <button type="submit">Enviar</button>
-                    <form action="{{ url_for('limpar') }}" method="post" style="display:inline;">
-                        <button type="submit" class="clear-button">Apagar Conversa</button>
-                    </form>
                 </div>
+            </form>
+            <form action="{{ url_for('limpar') }}" method="post" style="display:inline;">
+                <button type="submit" class="clear-button">Apagar Conversa</button>
             </form>
         </div>
     </div>
