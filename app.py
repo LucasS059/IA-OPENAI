@@ -24,12 +24,9 @@ def perguntar():
         temperature=1
     ).choices[0].message.content.strip()
 
-    # Adiciona formatação à resposta
-    resposta_formatada = resposta.replace("\n", "<br>")  # Substitui quebras de linha por quebras de linha HTML
-
+    resposta_formatada = resposta.replace("\n", "<br>") 
     historico.append({"role": "assistant", "content": resposta_formatada})
     return redirect(url_for('home'))
-
 
 @app.route('/clear', methods=['POST'])
 def limpar():
