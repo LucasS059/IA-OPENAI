@@ -1,56 +1,51 @@
-## Integração de IA com OpenAI usando Flask
+## Integração de IA com OpenAI Usando Flask
 
-Este projeto utiliza a API da OpenAI para criar uma aplicação web que responde a perguntas utilizando modelos avançados de processamento de linguagem natural. Abaixo estão as funcionalidades principais do código:
+Este projeto utiliza a API da OpenAI para criar uma aplicação web que responde a perguntas utilizando modelos avançados de processamento de linguagem natural. Veja abaixo as funcionalidades principais e instruções detalhadas.
 
-### Funcionalidades:
+### Funcionalidades
 
-1. **Resposta a Perguntas**: Utilizando o modelo GPT-3.5-turbo da OpenAI, a aplicação é capaz de gerar respostas coerentes e contextuais a perguntas formuladas pelo usuário.
+1. **Resposta a Perguntas**: Utilizando o modelo GPT-3.5-turbo da OpenAI, a aplicação gera respostas coerentes e contextuais para perguntas feitas pelos usuários.
 
-2. **Histórico de Conversação**: A aplicação mantém um histórico das interações entre usuário e bot, exibindo tanto as perguntas feitas quanto as respostas geradas.
+2. **Histórico de Conversação**: A aplicação mantém um histórico das interações, exibindo perguntas e respostas de maneira contínua.
 
-### Como Utilizar:
+### Como Utilizar
 
 1. **Obtenha uma Chave de API da OpenAI**:
-   - Acesse o site da OpenAI Platform em [OpenAI Platform](https://platform.openai.com/signup).
-   - Crie uma conta se ainda não tiver uma. Você precisará fornecer um endereço de e-mail válido.
-   - Após criar sua conta, faça login na plataforma.
-   - No painel principal da OpenAI, procure por opções relacionadas a "API Keys" ou "Your API Keys".
-   - Clique para criar uma nova chave de API. Você pode precisar configurar permissões de acesso dependendo do plano que escolher.
+   - Acesse [OpenAI Platform](https://platform.openai.com/signup) e crie uma conta, se ainda não tiver uma.
+   - Após o login, vá para a seção "API Keys" e crie uma nova chave de API.
+   - Copie a chave gerada para uso posterior.
 
 2. **Crie um Arquivo `.env` na Raiz do Projeto**:
-   - Após obter sua chave de API da OpenAI, crie um arquivo chamado `.env` na pasta raiz do seu projeto Flask, se ainda não existir.
+   - Na raiz do seu projeto Flask, crie um arquivo chamado `.env` se ainda não existir.
 
 3. **Adicione sua Chave da API ao Arquivo `.env`**:
-   - Dentro do arquivo `.env`, adicione a seguinte linha, substituindo `SuaChaveDaAPIAqui` pela chave que você obteve:
+   - Insira a seguinte linha no arquivo `.env`, substituindo `SuaChaveDaAPIAqui` pela chave obtida:
      ```
      OPENAI_API_KEY=SuaChaveDaAPIAqui
      ```
 
-   Certifique-se de não incluir aspas ou quaisquer caracteres adicionais além da chave.
-
 4. **Configure o Projeto para Usar a Chave da API**:
-   - No código Python do seu projeto Flask, você pode usar a biblioteca `python-dotenv` para carregar automaticamente as variáveis de ambiente definidas no arquivo `.env`. Certifique-se de ter instalado a biblioteca usando `pip install python-dotenv`.
+   - Instale a biblioteca `python-dotenv` com `pip install python-dotenv` para carregar variáveis de ambiente do arquivo `.env`.
 
 5. **Verifique se os Créditos da API estão Disponíveis**:
-   - A API da OpenAI requer a compra de créditos de token para utilização. Após configurar sua chave, verifique se sua conta possui créditos suficientes para evitar interrupções no serviço.
+   - Certifique-se de que sua conta possui créditos suficientes para evitar interrupções no serviço.
 
 6. **Executando o Código**:
-   - Certifique-se de ter as bibliotecas necessárias instaladas. Caso contrário, instale o Flask e a biblioteca OpenAI usando:
+   - Instale as bibliotecas necessárias:
      ```
      pip install Flask openai
      ```
-   - Execute o aplicativo Flask utilizando o comando:
+   - Execute o aplicativo Flask com:
      ```
      python app.py
      ```
-   - O servidor Flask será iniciado e estará disponível em `http://localhost:5000` por padrão, pronto para receber perguntas e fornecer respostas utilizando a inteligência artificial da OpenAI.
+   - O servidor Flask será iniciado e estará disponível em `http://localhost:5000`.
 
-### Código Python:
+### Código Python
 
-O código Python abaixo demonstra como configurar um servidor Flask para integrar a API da OpenAI e responder a perguntas dos usuários:
+O código abaixo configura um servidor Flask para integrar a API da OpenAI e responder a perguntas dos usuários:
 
 ```python
-
 from flask import Flask, render_template, request, redirect, url_for
 from openai import OpenAI
 from dotenv import load_dotenv
@@ -58,11 +53,8 @@ import os
 
 load_dotenv()
 
-chave_api_openai = os.getenv('OPENAI_API_KEY')
-cliente = OpenAI(api_key=chave_api_openai)
-
 app = Flask(__name__)
-
+cliente = OpenAI(api_key=os.getenv('OPENAI_API_KEY'))
 historico = []
 
 @app.route('/')
@@ -73,8 +65,15 @@ def home():
 def perguntar():
     pergunta = request.form['question']
     historico.append({"role": "user", "content": pergunta})
-    resposta = gerar_resposta_pergunta(historico)
-    historico.append({"role": "assistant", "content": resposta})
+    
+    resposta = cliente.chat.completions.create(
+        model="gpt-3.5-turbo", 
+        messages=historico,
+        temperature=1
+    ).choices[0].message.content.strip()
+
+    resposta_formatada = resposta.replace("\n", "<br>") 
+    historico.append({"role": "assistant", "content": resposta_formatada})
     return redirect(url_for('home'))
 
 @app.route('/clear', methods=['POST'])
@@ -83,31 +82,18 @@ def limpar():
     historico = []
     return redirect(url_for('home'))
 
-def gerar_resposta_pergunta(historico):
-    resposta = cliente.chat.completions.create(
-        model="gpt-3.5-turbo", 
-        messages=historico,
-        temperature=1, 
-    )
-
-    texto_cru = resposta.choices[0].message.content.strip()
-    linhas = texto_cru.split('\n')
-    resposta_formatada = '<br>'.join(linhas)
-    return resposta_formatada
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)
-
 ```
 
-### Código HTML:
+### Código HTML
 
-A página HTML a seguir representa a interface onde o chatbot da OpenAI será exibido. Ela utiliza estilos CSS para criar uma experiência de chat limpa e responsiva:
+O código HTML a seguir representa a interface do chatbot, com uma experiência de chat limpa e responsiva:
 
 ```html
-
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -126,15 +112,27 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
 
         .chat-container {
             width: 100%;
-            max-width: 800px; 
+            max-width: 800px;
             background-color: #1a1a1a;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 80vh; 
+            height: 80vh;
             position: relative;
+        }
+
+        .tema {
+            background-color: #333333;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #444444;
+        }
+
+        .tema h1 {
+            margin: 0;
+            font-size: 24px;
         }
 
         .messages {
@@ -146,12 +144,17 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             align-items: flex-start;
         }
 
-        .messages p {
+        .message {
             margin: 10px 0;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
             max-width: 80%;
             word-wrap: break-word;
+            position: relative;
+            background-color: #2c2c2c;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
         }
 
         .message-user {
@@ -164,140 +167,122 @@ A página HTML a seguir representa a interface onde o chatbot da OpenAI será ex
             background-color: #333333;
         }
 
+        .message::before {
+            content: attr(data-role);
+            font-weight: bold;
+            font-size: 14px;
+            color: #cccccc;
+            margin-bottom: 5px;
+        }
+
+        .message-user::before {
+            color: #4a4a4a;
+        }
+
+        .message-assistant::before {
+            color: #333333;
+        }
+
         .input-container {
-            display: flex;
-            flex-direction: column;
             border-top: 1px solid #444444;
             padding: 10px;
             background-color: #2c2c2c;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-container form {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 10px;
         }
 
         .input-container textarea {
             flex: 1;
-            padding: 15px;
-            border: none;
-            background-color: #2c2c2c;
+            padding: 12px;
+            border: 1px solid #444444;
+            background-color: #1a1a1a;
             color: #ffffff;
             font-size: 16px;
             border-radius: 5px;
             resize: none;
-            min-height: 50px;
+            min-height: 60px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+        }
+
+        .buttons form {
+            margin: 0;
         }
 
         .input-container button {
-            padding: 15px 20px;
+            padding: 12px 20px;
             border: none;
-            background-color: #3b3b3b;
+            background-color: #4a4a4a;
             color: #ffffff;
             cursor: pointer;
             font-size: 16px;
-            border-radius: 0 5px 5px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
         }
 
         .input-container button:hover {
-            background-color: #555555;
-        }
-
-        .tema {
-            text-align: center;
-            margin: 10px; 
-            border-radius: 10px;
-            background-color: #3b3b3b;
+            background-color: #6e6e6e;
         }
 
         .clear-button {
             background-color: #ff4b4b;
             color: #ffffff;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
             border-radius: 5px;
-            margin: 0 auto;
+            transition: background-color 0.3s ease;
         }
 
         .clear-button:hover {
             background-color: #ff0000;
         }
-
-        .button_submit {
-            margin: 10px;
-        }
-        
-        .forms_clear {
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
     </style>
 </head>
-<body>
 
+<body>
     <div class="chat-container">
         <div class="tema">
             <h1>IA - OPENAI</h1>
         </div>
 
         <div class="messages">
-            {% for message in historico %}
-                <p class="message-{{ message.role }}">{{ message.content | safe }}</p>
+            {% for mensagem in historico %}
+            <div class="message {{ mensagem.role }}" data-role="{{ mensagem.role.capitalize() }}">
+                <div>{{ mensagem.content | safe }}</div>
+            </div>
             {% endfor %}
         </div>
-        <form action="/ChatGpt-Openai" method="POST" class="input-container" id="chat-form">
-            <textarea name="question" placeholder="Digite sua pergunta" rows="3" required></textarea>
-            <button class="button_submit" type="submit">Enviar</button>
-        </form>
-        <form action="/clear" method="POST" class="forms_clear">
-            <button type="submit" class="clear-button">Apagar Conversa</button>
-        </form>
+
+        <div class="input-container">
+            <form action="{{ url_for('perguntar') }}" method="post">
+                <textarea name="question" placeholder="Digite sua pergunta" rows="3" required></textarea>
+                <div class="buttons">
+                    <button type="submit">Enviar</button>
+                    <form action="{{ url_for('limpar') }}" method="post" style="display:inline;">
+                        <button type="submit" class="clear-button">Apagar Conversa</button>
+                    </form>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <script>
-        // Função para rolar a página automaticamente para o final
-        function scrollToBottom() {
-            var chatContainer = document.querySelector('.messages');
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        // Chamar a função ao carregar a página
-        window.onload = function() {
-            scrollToBottom();
-        };
-
-        // Chamar a função sempre que o formulário for enviado
-        document.getElementById('chat-form').addEventListener('submit', function(event) {
-            scrollToBottom();
-            // Limpar o campo de entrada após o envio
-            document.querySelector('textarea').value = '';
-        });
-
-        // Impedir que a tecla Enter crie uma nova linha na textarea
-        document.querySelector('textarea').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                document.getElementById('chat-form').submit();
-            }
-        });
-
-        // Mostrar a animação de carregamento ao enviar o formulário
-        document.getElementById('chat-form').addEventListener('submit', function(event) {
-            var question = document.querySelector('textarea').value.trim();
-            if (question === '') {
-                event.preventDefault();
-                return;
-            }
-        });
-    </script>
 </body>
 </html>
-
 ```
 
-### Nota Importante:
+### Nota Importante
 
-Para usar o código HTML fornecido no projeto Flask, certifique-se de colocar todos os arquivos HTML na pasta `templates`. O Flask utiliza essa convenção para localizar os templates HTML durante a execução do aplicativo.
+Certifique-se de colocar todos os arquivos HTML na pasta `templates`. O Flask utiliza essa convenção para localizar os templates durante a execução do aplicativo.
 
 ---
