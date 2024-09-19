@@ -103,7 +103,6 @@
             flex: 1;
             align-items: center;
             gap: 10px;
-            /* Espaço entre o textarea e os botões */
         }
 
         .input-container textarea {
@@ -121,12 +120,10 @@
         .buttons {
             display: flex;
             gap: 10px;
-            /* Espaço entre os botões */
         }
 
         .buttons form {
             margin: 0;
-            /* Remove a margem dos formulários internos */
         }
 
         .input-container button {
@@ -175,7 +172,6 @@
             {% endfor %}
         </div>
 
-        <!-- Formulário para enviar perguntas -->
         <div class="input-container">
             <form action="{{ url_for('perguntar') }}" method="post">
                 <textarea name="question" placeholder="Digite sua pergunta" rows="3" required></textarea>
