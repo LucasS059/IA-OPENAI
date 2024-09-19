@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-br">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -18,15 +19,27 @@
 
         .chat-container {
             width: 100%;
-            max-width: 800px; 
+            max-width: 800px;
             background-color: #1a1a1a;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
             overflow: hidden;
             display: flex;
             flex-direction: column;
-            height: 80vh; 
+            height: 80vh;
             position: relative;
+        }
+
+        .tema {
+            background-color: #333333;
+            padding: 15px;
+            text-align: center;
+            border-bottom: 1px solid #444444;
+        }
+
+        .tema h1 {
+            margin: 0;
+            font-size: 24px;
         }
 
         .messages {
@@ -38,12 +51,17 @@
             align-items: flex-start;
         }
 
-        .messages p {
+        .message {
             margin: 10px 0;
-            padding: 10px 15px;
-            border-radius: 8px;
+            padding: 15px;
+            border-radius: 10px;
             max-width: 80%;
             word-wrap: break-word;
+            position: relative;
+            background-color: #2c2c2c;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
         }
 
         .message-user {
@@ -56,132 +74,120 @@
             background-color: #333333;
         }
 
+        .message::before {
+            content: attr(data-role);
+            font-weight: bold;
+            font-size: 14px;
+            color: #cccccc;
+            margin-bottom: 5px;
+        }
+
+        .message-user::before {
+            color: #4a4a4a;
+        }
+
+        .message-assistant::before {
+            color: #333333;
+        }
+
         .input-container {
-            display: flex;
-            flex-direction: column;
             border-top: 1px solid #444444;
             padding: 10px;
             background-color: #2c2c2c;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-container form {
+            display: flex;
+            flex: 1;
+            align-items: center;
+            gap: 10px;
+            /* Espaço entre o textarea e os botões */
         }
 
         .input-container textarea {
             flex: 1;
-            padding: 15px;
-            border: none;
-            background-color: #2c2c2c;
+            padding: 12px;
+            border: 1px solid #444444;
+            background-color: #1a1a1a;
             color: #ffffff;
             font-size: 16px;
             border-radius: 5px;
             resize: none;
-            min-height: 50px;
+            min-height: 60px;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            /* Espaço entre os botões */
+        }
+
+        .buttons form {
+            margin: 0;
+            /* Remove a margem dos formulários internos */
         }
 
         .input-container button {
-            padding: 15px 20px;
+            padding: 12px 20px;
             border: none;
-            background-color: #3b3b3b;
+            background-color: #4a4a4a;
             color: #ffffff;
             cursor: pointer;
             font-size: 16px;
-            border-radius: 0 5px 5px 0;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
         }
 
         .input-container button:hover {
-            background-color: #555555;
-        }
-
-        .tema {
-            text-align: center;
-            margin: 10px; 
-            border-radius: 10px;
-            background-color: #3b3b3b;
+            background-color: #6e6e6e;
         }
 
         .clear-button {
             background-color: #ff4b4b;
             color: #ffffff;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             cursor: pointer;
             font-size: 16px;
-            margin-top: 10px;
             border-radius: 5px;
-            margin: 0 auto;
+            transition: background-color 0.3s ease;
         }
 
         .clear-button:hover {
             background-color: #ff0000;
         }
-
-        .button_submit {
-            margin: 10px;
-        }
-        
-        .forms_clear {
-            padding: 10px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-        }
-
     </style>
 </head>
-<body>
 
+<body>
     <div class="chat-container">
         <div class="tema">
             <h1>IA - OPENAI</h1>
         </div>
 
         <div class="messages">
-            {% for message in historico %}
-                <p class="message-{{ message.role }}">{{ message.content | safe }}</p>
+            {% for mensagem in historico %}
+            <div class="message {{ mensagem.role }}" data-role="{{ mensagem.role.capitalize() }}">
+                <div>{{ mensagem.content | safe }}</div>
+            </div>
             {% endfor %}
         </div>
-        <form action="/ChatGpt-Openai" method="POST" class="input-container" id="chat-form">
-            <textarea name="question" placeholder="Digite sua pergunta" rows="3" required></textarea>
-            <button class="button_submit" type="submit">Enviar</button>
-        </form>
-        <form action="/clear" method="POST" class="forms_clear">
-            <button type="submit" class="clear-button">Apagar Conversa</button>
-        </form>
+
+        <!-- Formulário para enviar perguntas -->
+        <div class="input-container">
+            <form action="{{ url_for('perguntar') }}" method="post">
+                <textarea name="question" placeholder="Digite sua pergunta" rows="3" required></textarea>
+                <div class="buttons">
+                    <button type="submit">Enviar</button>
+                    <form action="{{ url_for('limpar') }}" method="post" style="display:inline;">
+                        <button type="submit" class="clear-button">Apagar Conversa</button>
+                    </form>
+                </div>
+            </form>
+        </div>
     </div>
-
-    <script>
-        // Função para rolar a página automaticamente para o final
-        function scrollToBottom() {
-            var chatContainer = document.querySelector('.messages');
-            chatContainer.scrollTop = chatContainer.scrollHeight;
-        }
-
-        // Chamar a função ao carregar a página
-        window.onload = function() {
-            scrollToBottom();
-        };
-
-        // Chamar a função sempre que o formulário for enviado
-        document.getElementById('chat-form').addEventListener('submit', function(event) {
-            scrollToBottom();
-            // Limpar o campo de entrada após o envio
-            document.querySelector('textarea').value = '';
-        });
-
-        // Impedir que a tecla Enter crie uma nova linha na textarea
-        document.querySelector('textarea').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                document.getElementById('chat-form').submit();
-            }
-        });
-
-        // Mostrar a animação de carregamento ao enviar o formulário
-        document.getElementById('chat-form').addEventListener('submit', function(event) {
-            var question = document.querySelector('textarea').value.trim();
-            if (question === '') {
-                event.preventDefault();
-                return;
-            }
-        });
-    </script>
 </body>
+
 </html>
